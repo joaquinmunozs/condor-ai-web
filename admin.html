@@ -31,8 +31,28 @@
   <div class="aw">
     <div id="login" style="display:none">
       <h1 style="font-size:1.8rem;margin-bottom:8px">Acceso <span class="grad-tx">admin</span></h1>
-      <p style="color:var(--tx-2);margin-bottom:18px">Solo el equipo condor.ai. Ingresa tu correo de admin.</p>
-      <div class="pcard" style="max-width:420px"><label>Correo</label><input id="email" type="email" placeholder="tucorreo@gmail.com" /><button class="btn btn-grad" style="width:100%;margin-top:14px" id="btnLogin">Enviarme el enlace</button><p id="msg" style="color:var(--tx-2);font-size:.85rem;margin-top:12px;text-align:center"></p></div>
+      <p style="color:var(--tx-2);margin-bottom:18px">Solo el equipo condor.ai.</p>
+      <div class="pcard" style="max-width:420px">
+        <div id="step-pass">
+          <label>Correo</label><input id="email" type="email" placeholder="tucorreo@gmail.com" autocomplete="email" />
+          <label>Contraseña</label><input id="pass" type="password" placeholder="Tu contraseña" autocomplete="current-password" />
+          <button class="btn btn-grad" style="width:100%;margin-top:14px" id="btnPass">Entrar</button>
+          <p style="margin-top:12px;text-align:center"><a class="lnk" id="lnkCode" style="cursor:pointer;font-size:.85rem">Entrar con código / Olvidé mi contraseña</a></p>
+        </div>
+        <div id="step-code" style="display:none">
+          <p style="color:var(--tx-2);font-size:.9rem">Código de 6 dígitos enviado a <b id="codeEmail"></b>:</p>
+          <input id="code" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:.4em;text-align:center;font-size:1.2rem" />
+          <button class="btn btn-grad" style="width:100%;margin-top:14px" id="btnCode">Verificar</button>
+          <p style="margin-top:12px;text-align:center"><a class="lnk" id="lnkBack" style="cursor:pointer;font-size:.85rem">← Volver</a></p>
+        </div>
+        <div id="step-newpass" style="display:none">
+          <p style="color:var(--tx-2);font-size:.9rem">Crea tu contraseña (la usarás siempre):</p>
+          <input id="np1" type="password" placeholder="Nueva contraseña (mín. 8)" autocomplete="new-password" />
+          <input id="np2" type="password" placeholder="Repite la contraseña" autocomplete="new-password" />
+          <button class="btn btn-grad" style="width:100%;margin-top:14px" id="btnNewPass">Guardar contraseña</button>
+        </div>
+        <p id="msg" style="color:var(--tx-2);font-size:.85rem;margin-top:12px;text-align:center"></p>
+      </div>
     </div>
 
     <div id="panel" style="display:none">
@@ -72,12 +92,26 @@
     const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const fmt=(n,m)=> (m||"CLP")+" "+(Number(n||0)).toLocaleString();
 
+    const show = (s) => ["step-pass","step-code","step-newpass"].forEach(x=>$(x).style.display = x===s?"block":"none");
+    const reMail=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
     async function init(){
       const { data:{session} } = await sb.auth.getSession();
       $("cargando").style.display="none";
-      if(!session){ $("login").style.display="block"; return; }
+      if(!session){ $("login").style.display="block"; show("step-pass"); return; }
+      await afterAuth();
+    }
+
+    async function afterAuth(){
+      const { data:{ user } } = await sb.auth.getUser();
+      if(!user) return;
+      if(!user.user_metadata || user.user_metadata.password_set !== true){
+        $("cargando").style.display="none"; $("panel").style.display="none";
+        $("login").style.display="block"; show("step-newpass"); return;
+      }
       const { data:adm } = await sb.rpc("es_admin");
-      if(!adm){ $("cargando").style.display="block"; $("cargando").innerHTML="Tu correo no es admin. <a class='lnk' href='portal.html'>Ir al portal de clientes →</a>"; return; }
+      if(!adm){ $("login").style.display="none"; $("cargando").style.display="block"; $("cargando").innerHTML="Tu correo no es admin. <a class='lnk' href='portal.html'>Ir al portal de clientes →</a>"; return; }
+      $("login").style.display="none";
       $("btnOut").style.display="inline-flex"; $("panel").style.display="block";
       cargar();
     }
@@ -119,14 +153,44 @@
       if(!error){ ["c_email","c_negocio","c_plan","c_concepto","c_web"].forEach(i=>$(i).value=""); cargar(); }
     };
 
-    $("btnLogin").onclick=async()=>{
+    $("btnPass").onclick=async()=>{
+      const email=$("email").value.trim(), password=$("pass").value;
+      if(!reMail.test(email)){ $("msg").textContent="Correo inválido."; return; }
+      if(!password){ $("msg").textContent="Escribe tu contraseña o usa “Entrar con código”."; return; }
+      $("btnPass").disabled=true; $("msg").textContent="Entrando…";
+      const { error }=await sb.auth.signInWithPassword({ email, password });
+      $("btnPass").disabled=false;
+      $("msg").textContent= error ? "Correo o contraseña incorrectos. Primera vez: usa “Entrar con código”." : "";
+    };
+    $("lnkCode").onclick=async()=>{
       const email=$("email").value.trim();
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("msg").textContent="Correo inválido."; return; }
-      const { error }=await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
-      $("msg").textContent= error ? ("Error: "+error.message) : "✅ Revisa tu correo y abre el enlace.";
+      if(!reMail.test(email)){ $("msg").textContent="Primero escribe tu correo."; return; }
+      $("msg").textContent="Enviando código…";
+      const { error }=await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+      if(error){ $("msg").textContent="Error: "+error.message; return; }
+      $("codeEmail").textContent=email; $("msg").textContent=""; show("step-code"); $("code").focus();
+    };
+    $("lnkBack").onclick=()=>{ show("step-pass"); $("msg").textContent=""; };
+    $("btnCode").onclick=async()=>{
+      const email=$("email").value.trim(), token=$("code").value.trim();
+      if(token.length<6){ $("msg").textContent="El código tiene 6 dígitos."; return; }
+      $("btnCode").disabled=true; $("msg").textContent="Verificando…";
+      const { error }=await sb.auth.verifyOtp({ email, token, type:"email" });
+      $("btnCode").disabled=false;
+      $("msg").textContent= error ? "Código incorrecto o vencido." : "";
+    };
+    $("btnNewPass").onclick=async()=>{
+      const p1=$("np1").value, p2=$("np2").value;
+      if(p1.length<8){ $("msg").textContent="Mínimo 8 caracteres."; return; }
+      if(p1!==p2){ $("msg").textContent="Las contraseñas no coinciden."; return; }
+      $("btnNewPass").disabled=true; $("msg").textContent="Guardando…";
+      const { error }=await sb.auth.updateUser({ password:p1, data:{ password_set:true } });
+      $("btnNewPass").disabled=false;
+      if(error){ $("msg").textContent="Error: "+error.message; return; }
+      $("msg").textContent=""; await afterAuth();
     };
     $("btnOut").onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
-    sb.auth.onAuthStateChange((_e,s)=>{ if(s) init(); });
+    sb.auth.onAuthStateChange((_e,s)=>{ if(s) afterAuth(); });
     init();
   </script>
 </body>

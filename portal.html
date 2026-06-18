@@ -32,11 +32,31 @@
     <!-- LOGIN -->
     <div id="login" style="display:none">
       <h1 style="font-size:2rem;margin-bottom:8px">Portal de <span class="grad-tx">clientes</span></h1>
-      <p class="muted" style="margin-bottom:20px">Ingresa tu correo y te enviamos un enlace de acceso (sin contraseña).</p>
+      <p class="muted" style="margin-bottom:20px">Acceso exclusivo para clientes de condor.ai.</p>
       <div class="pcard">
-        <label class="muted">Tu correo</label>
-        <input class="pinput" id="email" type="email" placeholder="tucorreo@ejemplo.com" />
-        <button class="btn btn-grad" style="width:100%" id="btnLogin">Enviarme el enlace</button>
+        <!-- Paso 1: correo + contraseña -->
+        <div id="step-pass">
+          <label class="muted">Tu correo</label>
+          <input class="pinput" id="email" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+          <label class="muted">Contraseña</label>
+          <input class="pinput" id="pass" type="password" placeholder="Tu contraseña" autocomplete="current-password" />
+          <button class="btn btn-grad" style="width:100%" id="btnPass">Entrar</button>
+          <p class="muted" style="margin-top:14px;text-align:center"><a class="lnk" id="lnkCode" style="cursor:pointer">Entrar con código / Olvidé mi contraseña</a></p>
+        </div>
+        <!-- Paso 2: código de 6 dígitos -->
+        <div id="step-code" style="display:none">
+          <p class="muted">Te enviamos un código de 6 dígitos a <b id="codeEmail"></b>. Escríbelo aquí:</p>
+          <input class="pinput" id="code" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:.4em;text-align:center;font-size:1.3rem" />
+          <button class="btn btn-grad" style="width:100%" id="btnCode">Verificar código</button>
+          <p class="muted" style="margin-top:14px;text-align:center"><a class="lnk" id="lnkBack" style="cursor:pointer">← Volver</a></p>
+        </div>
+        <!-- Paso 3: crear contraseña (primer ingreso) -->
+        <div id="step-newpass" style="display:none">
+          <p class="muted">Crea una contraseña para tu cuenta. La usarás para entrar siempre.</p>
+          <input class="pinput" id="np1" type="password" placeholder="Nueva contraseña (mín. 8)" autocomplete="new-password" />
+          <input class="pinput" id="np2" type="password" placeholder="Repite la contraseña" autocomplete="new-password" />
+          <button class="btn btn-grad" style="width:100%" id="btnNewPass">Guardar contraseña</button>
+        </div>
         <p class="muted" id="loginMsg" style="margin-top:14px;text-align:center"></p>
       </div>
     </div>
@@ -80,11 +100,24 @@
       const [c,t] = m[estado] || ["b-pend", estado||"—"]; return `<span class="badge ${c}">${t}</span>`;
     };
 
+    const show = (s) => ["step-pass","step-code","step-newpass"].forEach(x=>$(x).style.display = x===s?"block":"none");
+
+    // Tras autenticarse: si aún no tiene contraseña, forzar crearla; si no, al dashboard
+    async function afterAuth(){
+      const { data:{ user } } = await sb.auth.getUser();
+      if(!user) return;
+      if(!user.user_metadata || user.user_metadata.password_set !== true){
+        $("cargando").style.display="none"; $("dash").style.display="none";
+        $("login").style.display="block"; show("step-newpass"); return;
+      }
+      await cargarDash();
+    }
+
     async function init(){
       const { data:{ session } } = await sb.auth.getSession();
       $("cargando").style.display="none";
-      if(!session){ $("login").style.display="block"; return; }
-      await cargarDash();
+      if(!session){ $("login").style.display="block"; show("step-pass"); return; }
+      await afterAuth();
     }
 
     async function cargarDash(){
@@ -158,18 +191,56 @@
       w.document.close();
     };
 
-    $("btnLogin").onclick = async () => {
-      const email = $("email").value.trim();
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("loginMsg").textContent="Pon un correo válido."; return; }
-      $("btnLogin").disabled=true; $("loginMsg").textContent="Enviando…";
-      const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
-      $("btnLogin").disabled=false;
-      $("loginMsg").textContent = error ? ("Error: "+error.message) : "✅ Revisa tu correo y abre el enlace para entrar.";
+    const reMail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+    // Paso 1: entrar con contraseña
+    $("btnPass").onclick = async () => {
+      const email = $("email").value.trim(), password = $("pass").value;
+      if(!reMail.test(email)){ $("loginMsg").textContent="Pon un correo válido."; return; }
+      if(!password){ $("loginMsg").textContent="Escribe tu contraseña o usa “Entrar con código”."; return; }
+      $("btnPass").disabled=true; $("loginMsg").textContent="Entrando…";
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      $("btnPass").disabled=false;
+      $("loginMsg").textContent = error ? "Correo o contraseña incorrectos. Si es tu primera vez, usa “Entrar con código”." : "";
     };
+
+    // Pedir código de 6 dígitos
+    $("lnkCode").onclick = async () => {
+      const email = $("email").value.trim();
+      if(!reMail.test(email)){ $("loginMsg").textContent="Primero escribe tu correo arriba."; return; }
+      $("loginMsg").textContent="Enviando código…";
+      const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+      if(error){ $("loginMsg").textContent="Error: "+error.message; return; }
+      $("codeEmail").textContent = email; $("loginMsg").textContent=""; show("step-code"); $("code").focus();
+    };
+    $("lnkBack").onclick = () => { show("step-pass"); $("loginMsg").textContent=""; };
+
+    // Paso 2: verificar código
+    $("btnCode").onclick = async () => {
+      const email = $("email").value.trim(), token = $("code").value.trim();
+      if(token.length<6){ $("loginMsg").textContent="El código tiene 6 dígitos."; return; }
+      $("btnCode").disabled=true; $("loginMsg").textContent="Verificando…";
+      const { error } = await sb.auth.verifyOtp({ email, token, type:"email" });
+      $("btnCode").disabled=false;
+      $("loginMsg").textContent = error ? "Código incorrecto o vencido. Pide uno nuevo." : "";
+    };
+
+    // Paso 3: guardar contraseña permanente
+    $("btnNewPass").onclick = async () => {
+      const p1 = $("np1").value, p2 = $("np2").value;
+      if(p1.length<8){ $("loginMsg").textContent="Mínimo 8 caracteres."; return; }
+      if(p1!==p2){ $("loginMsg").textContent="Las contraseñas no coinciden."; return; }
+      $("btnNewPass").disabled=true; $("loginMsg").textContent="Guardando…";
+      const { error } = await sb.auth.updateUser({ password:p1, data:{ password_set:true } });
+      $("btnNewPass").disabled=false;
+      if(error){ $("loginMsg").textContent="Error: "+error.message; return; }
+      $("loginMsg").textContent=""; await afterAuth();
+    };
+
     $("btnOut").onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
-    // Reaccionar al volver del enlace mágico
-    sb.auth.onAuthStateChange((_e, session)=>{ if(session) cargarDash(); });
+    // Reaccionar al iniciar sesión (código o contraseña)
+    sb.auth.onAuthStateChange((_e, session)=>{ if(session) afterAuth(); });
     init();
   </script>
 </body>
