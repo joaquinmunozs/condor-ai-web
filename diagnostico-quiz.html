@@ -357,13 +357,22 @@
     /* ===== Envío a Supabase Edge Function (IA + base de datos) ===== */
     async function enviar(){
       leerCampos();
+      // Anti-spam (por navegador): máximo 2 diagnósticos
+      const usos = +(localStorage.getItem('condor_diag_usos')||0);
+      if(usos >= 2){
+        form.style.display='none';
+        mostrar({ saludo:'Ya hiciste tu diagnóstico 👋', diagnostico:'Para cuidar la calidad lo limitamos a 2 por persona. Escríbenos por WhatsApp y te ayudamos personalmente con tu caso, sin límite.', problemas:[], recomendacion:'Hablemos directo por WhatsApp.' });
+        return;
+      }
       form.style.display='none'; document.getElementById('proc').classList.add('on'); correrProceso();
       try{
         const r=await fetch(FUNCTION_URL,{method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+ANON_KEY,'apikey':ANON_KEY},
           body:JSON.stringify(datos)});
         if(!r.ok) throw new Error('HTTP '+r.status);
-        const out=await r.json(); setTimeout(()=>mostrar(out),900);
+        const out=await r.json();
+        if(!out.bloqueado){ localStorage.setItem('condor_diag_usos', usos+1); }
+        setTimeout(()=>mostrar(out),900);
       }catch(e){
         document.getElementById('proc').classList.remove('on'); form.style.display='block';
         err.textContent='✕ No pudimos generar tu diagnóstico. Reintenta o escríbenos por WhatsApp.'; err.classList.add('on');
