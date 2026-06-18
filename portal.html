@@ -57,6 +57,21 @@
     const SUPABASE_URL = "https://ogmvdthxwcmvqjlxhpsr.supabase.co";
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nbXZkdGh4d2NtdnFqbHhocHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDEwMTksImV4cCI6MjA5NzIxNzAxOX0.wo6zSUlMejjYu1hSweZcWEBBdCvBgVNWg3xtLzFTIrI";
     const sb = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const FUNCTIONS = SUPABASE_URL + "/functions/v1";
+
+    // Botón inteligente: crea el cobro con el monto exacto del cliente
+    window.pagar = async function(tipo){
+      const { data:{ session } } = await sb.auth.getSession();
+      if(!session){ alert("Inicia sesión primero."); return; }
+      try{
+        const r = await fetch(FUNCTIONS + "/crear-pago", { method:"POST",
+          headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+session.access_token, "apikey":ANON_KEY },
+          body: JSON.stringify({ tipo }) });
+        const j = await r.json();
+        if(j.init_point) location.href = j.init_point;
+        else alert("No se pudo iniciar el pago: " + (j.error||"intenta de nuevo"));
+      }catch(e){ alert("Error de conexión. Intenta de nuevo."); }
+    };
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -82,8 +97,8 @@
         return;
       }
       const c = data, mon = c.moneda || "CLP";
-      const setupBtn = c.setup_estado!=="pagado" && c.link_setup ? `<a class="btn btn-grad" href="${esc(c.link_setup)}" target="_blank" rel="noopener">Pagar setup</a>` : "";
-      const mensualBtn = c.link_mensual ? `<a class="btn btn-grad" href="${esc(c.link_mensual)}" target="_blank" rel="noopener">${c.mensual_estado==="al_dia"?"Gestionar suscripción":"Activar mensualidad"}</a>` : "";
+      const setupBtn = c.setup_estado!=="pagado" && c.setup_monto ? `<button class="btn btn-grad" onclick="pagar('setup')">Pagar setup</button>` : "";
+      const mensualBtn = c.mensual_monto ? `<button class="btn btn-grad" onclick="pagar('mensual')">${c.mensual_estado==="al_dia"?"Gestionar mensualidad":"Activar mensualidad"}</button>` : "";
       const paypalBtn = c.link_paypal ? `<a class="btn" style="background:#ffc439;color:#003087;font-weight:700" href="${esc(c.link_paypal)}" target="_blank" rel="noopener">Pagar con PayPal</a>` : "";
       b.innerHTML = `
         <div class="pcard" style="margin-bottom:18px">
