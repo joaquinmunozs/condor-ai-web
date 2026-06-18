@@ -76,8 +76,8 @@
       </div>
 
       <div class="pcard">
-        <h3 style="font-size:1.1rem;margin-bottom:14px">👥 Clientes</h3>
-        <div style="overflow-x:auto"><table id="tabla"><thead><tr><th>Negocio</th><th>Plan</th><th>Setup</th><th>Mensual</th><th>Cobrar</th></tr></thead><tbody id="filas"></tbody></table></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px"><h3 style="font-size:1.1rem">👥 Clientes</h3><button class="btn btn-soft mini" id="verArch" onclick="toggleArch()">Ver archivados</button></div>
+        <div style="overflow-x:auto"><table id="tabla"><thead><tr><th>Negocio</th><th>Plan</th><th>Setup</th><th>Mensual</th><th>Acciones</th></tr></thead><tbody id="filas"></tbody></table></div>
       </div>
     </div>
     <p id="cargando" style="color:var(--tx-2);text-align:center">Cargando…</p>
@@ -116,24 +116,40 @@
       cargar();
     }
 
+    let verArchivados=false;
     async function cargar(){
       const { data:clientes } = await sb.from("clientes").select("*").order("creado_en",{ascending:false});
       const { data:pagos } = await sb.from("pagos").select("monto,estado,tipo");
+      const activos   = (clientes||[]).filter(c=>!c.archivado);
+      const archivados= (clientes||[]).filter(c=>c.archivado);
+      const lista = verArchivados ? archivados : activos;
       const ingresos = (pagos||[]).filter(p=>p.estado==="pagado").reduce((s,p)=>s+(p.monto||0),0);
-      const pend = (clientes||[]).filter(c=>c.setup_estado!=="pagado").length;
+      const pend = activos.filter(c=>c.setup_estado!=="pagado").length;
       $("kpis").innerHTML=`
-        <div class="kpi"><b>${(clientes||[]).length}</b><span>Clientes</span></div>
+        <div class="kpi"><b>${activos.length}</b><span>Clientes activos</span></div>
         <div class="kpi"><b class="grad-tx">${(ingresos).toLocaleString()}</b><span>Ingresos cobrados</span></div>
         <div class="kpi"><b>${(pagos||[]).filter(p=>p.estado==='pagado').length}</b><span>Pagos confirmados</span></div>
         <div class="kpi"><b>${pend}</b><span>Setup pendiente</span></div>`;
+      $("verArch").textContent = verArchivados ? `← Ver activos (${activos.length})` : `Ver archivados (${archivados.length})`;
       const badge=(e)=>{const m={pagado:["b-ok","Pagado"],al_dia:["b-aldia","Al día"],vencido:["b-pend","Vencido"],pendiente:["b-pend","Pendiente"]};const[c,t]=m[e]||["b-pend",e||"—"];return `<span class="badge ${c}">${t}</span>`;};
-      $("filas").innerHTML=(clientes||[]).map(c=>`
+      $("filas").innerHTML = lista.map(c=>`
         <tr><td><b>${esc(c.negocio)||"—"}</b><br><span style="color:var(--tx-2);font-size:.8rem">${esc(c.email)}</span></td>
         <td>${esc(c.plan)||"—"}</td>
         <td>${fmt(c.setup_monto,c.moneda)}<br>${badge(c.setup_estado)}</td>
         <td>${fmt(c.mensual_monto,c.moneda)}<br>${badge(c.mensual_estado)}</td>
-        <td><button class="btn btn-soft mini" onclick="cobro('${c.id}','setup')">Link setup</button> <button class="btn btn-soft mini" onclick="cobro('${c.id}','mensual')">Link mensual</button></td></tr>`).join("");
+        <td>${ verArchivados
+          ? `<button class="btn btn-soft mini" onclick="restaurar('${c.id}')">Restaurar</button> <button class="btn mini" style="background:#ffe3e6;color:#c0263a" onclick="borrarCliente('${c.id}','${esc(c.negocio||c.email).replace(/'/g,"")}')">Borrar</button>`
+          : `<button class="btn btn-soft mini" onclick="cobro('${c.id}','setup')">Link setup</button> <button class="btn btn-soft mini" onclick="cobro('${c.id}','mensual')">Link mensual</button> <button class="btn btn-soft mini" onclick="archivar('${c.id}')">Archivar</button>` }
+        </td></tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--tx-2);padding:24px">${verArchivados?"No hay clientes archivados.":"Aún no hay clientes. Crea el primero arriba."}</td></tr>`;
     }
+    window.toggleArch=()=>{ verArchivados=!verArchivados; cargar(); };
+    window.archivar=async(id)=>{ const {error}=await sb.from("clientes").update({archivado:true}).eq("id",id); if(error)alert("No se pudo archivar: "+error.message); else cargar(); };
+    window.restaurar=async(id)=>{ const {error}=await sb.from("clientes").update({archivado:false}).eq("id",id); if(error)alert("No se pudo restaurar: "+error.message); else cargar(); };
+    window.borrarCliente=async(id,nombre)=>{
+      if(!confirm("¿Borrar definitivamente a "+nombre+"?\n\nEsto elimina su ficha y TODO su historial de pagos. No se puede deshacer.\n\n(Si solo quieres ocultarlo, usa Archivar.)")) return;
+      const {error}=await sb.from("clientes").delete().eq("id",id);
+      if(error)alert("No se pudo borrar: "+error.message); else cargar();
+    };
 
     window.cobro=async function(id,tipo){
       const { data:{session} } = await sb.auth.getSession();
