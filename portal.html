@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal de clientes · condor.ai</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .portal-wrap{max-width:680px;margin:0 auto;padding:130px 22px 80px}
+    .pcard{background:var(--bg-2);border:1px solid var(--linea);border-radius:var(--r);padding:34px;box-shadow:var(--sombra-s)}
+    .badge{display:inline-block;font-size:.78rem;font-weight:700;padding:5px 12px;border-radius:999px}
+    .b-ok{background:rgba(10,125,79,.12);color:#0a7d4f}.b-pend{background:rgba(255,59,78,.1);color:#c0263a}.b-aldia{background:rgba(39,71,255,.1);color:var(--azul)}
+    .frow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--linea)}
+    .frow:last-child{border:none}.frow b{font-weight:600}.frow span{color:var(--tx-2)}
+    .pinput{width:100%;border:1px solid var(--linea);border-radius:14px;padding:14px 16px;font-family:var(--sf);font-size:1rem;margin:14px 0}
+    .pinput:focus{outline:none;border-color:var(--azul)}
+    .muted{color:var(--tx-2);font-size:.9rem}
+    .topbar{position:fixed;top:0;left:0;right:0;background:rgba(255,255,255,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--linea);z-index:50}
+    .topbar-in{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 22px}
+    .topbar img{height:24px}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="topbar-in">
+    <a href="index.html"><img src="assets/logo.png" alt="condor.ai" /></a>
+    <a class="lnk" href="index.html">← Volver al sitio</a>
+  </div></div>
+
+  <div class="portal-wrap">
+    <!-- LOGIN -->
+    <div id="login" style="display:none">
+      <h1 style="font-size:2rem;margin-bottom:8px">Portal de <span class="grad-tx">clientes</span></h1>
+      <p class="muted" style="margin-bottom:20px">Ingresa tu correo y te enviamos un enlace de acceso (sin contraseña).</p>
+      <div class="pcard">
+        <label class="muted">Tu correo</label>
+        <input class="pinput" id="email" type="email" placeholder="tucorreo@ejemplo.com" />
+        <button class="btn btn-grad" style="width:100%" id="btnLogin">Enviarme el enlace</button>
+        <p class="muted" id="loginMsg" style="margin-top:14px;text-align:center"></p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <h1 style="font-size:1.8rem">Hola 👋</h1>
+        <button class="btn btn-soft" style="min-height:42px;font-size:.9rem" id="btnOut">Salir</button>
+      </div>
+      <div id="dashBody"></div>
+    </div>
+
+    <p id="cargando" class="muted" style="text-align:center">Cargando…</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ogmvdthxwcmvqjlxhpsr.supabase.co";
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nbXZkdGh4d2NtdnFqbHhocHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDEwMTksImV4cCI6MjA5NzIxNzAxOX0.wo6zSUlMejjYu1hSweZcWEBBdCvBgVNWg3xtLzFTIrI";
+    const sb = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const badge = (estado) => {
+      const m = {pagado:["b-ok","Pagado ✓"], al_dia:["b-aldia","Al día"], vencido:["b-pend","Vencido"], pendiente:["b-pend","Pendiente"]};
+      const [c,t] = m[estado] || ["b-pend", estado||"—"]; return `<span class="badge ${c}">${t}</span>`;
+    };
+
+    async function init(){
+      const { data:{ session } } = await sb.auth.getSession();
+      $("cargando").style.display="none";
+      if(!session){ $("login").style.display="block"; return; }
+      await cargarDash();
+    }
+
+    async function cargarDash(){
+      $("login").style.display="none"; $("dash").style.display="block";
+      const { data, error } = await sb.from("clientes").select("*").limit(1).maybeSingle();
+      const b = $("dashBody");
+      if(error || !data){
+        b.innerHTML = `<div class="pcard"><p>Tu cuenta aún no está configurada. Escríbenos por WhatsApp y la activamos.</p>
+          <a class="btn btn-wsp" style="margin-top:16px" href="https://wa.me/56988989824?text=Hola,%20activé%20mi%20portal%20pero%20no%20veo%20mi%20cuenta" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>`;
+        return;
+      }
+      const c = data, mon = c.moneda || "CLP";
+      const setupBtn = c.setup_estado!=="pagado" && c.link_setup ? `<a class="btn btn-grad" href="${esc(c.link_setup)}" target="_blank" rel="noopener">Pagar setup</a>` : "";
+      const mensualBtn = c.link_mensual ? `<a class="btn btn-grad" href="${esc(c.link_mensual)}" target="_blank" rel="noopener">${c.mensual_estado==="al_dia"?"Gestionar suscripción":"Activar mensualidad"}</a>` : "";
+      b.innerHTML = `
+        <div class="pcard" style="margin-bottom:18px">
+          <div class="frow"><b>Negocio</b><span>${esc(c.negocio)||"—"}</span></div>
+          <div class="frow"><b>Plan</b><span>${esc(c.plan)||"—"}</span></div>
+          <div class="frow"><b>Setup ${c.setup_monto?`· ${mon} ${c.setup_monto.toLocaleString()}`:""}</b>${badge(c.setup_estado)}</div>
+          <div class="frow"><b>Mensualidad ${c.mensual_monto?`· ${mon} ${c.mensual_monto.toLocaleString()}/mes`:""}</b>${badge(c.mensual_estado)}</div>
+          ${c.proximo_cobro?`<div class="frow"><b>Próximo cobro</b><span>${esc(c.proximo_cobro)}</span></div>`:""}
+          ${c.web_url?`<div class="frow"><b>Tu sitio</b><a class="lnk" href="${esc(c.web_url)}" target="_blank" rel="noopener">Ver web →</a></div>`:""}
+        </div>
+        ${(setupBtn||mensualBtn)?`<div class="pcard"><p class="muted" style="margin-bottom:14px">Pagos seguros con Mercado Pago.</p><div style="display:flex;flex-wrap:wrap;gap:12px">${setupBtn}${mensualBtn}</div></div>`:`<div class="pcard"><p>¡Estás al día! 🎉 Gracias por confiar en condor.ai.</p></div>`}
+        <p class="muted" style="text-align:center;margin-top:18px">¿Dudas? <a class="lnk" href="https://wa.me/56988989824" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>`;
+    }
+
+    $("btnLogin").onclick = async () => {
+      const email = $("email").value.trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("loginMsg").textContent="Pon un correo válido."; return; }
+      $("btnLogin").disabled=true; $("loginMsg").textContent="Enviando…";
+      const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
+      $("btnLogin").disabled=false;
+      $("loginMsg").textContent = error ? ("Error: "+error.message) : "✅ Revisa tu correo y abre el enlace para entrar.";
+    };
+    $("btnOut").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+    // Reaccionar al volver del enlace mágico
+    sb.auth.onAuthStateChange((_e, session)=>{ if(session) cargarDash(); });
+    init();
+  </script>
+</body>
+</html>
