@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico gratis · ¿Tu negocio necesita una web? · condor.ai</title>
+  <meta name="description" content="7 preguntas · 60 segundos. Una IA analiza tu negocio y te dice exactamente qué está frenando tus ventas online — gratis e inmediato." />
+  <meta name="theme-color" content="#f3efe6" />
+  <link rel="icon" type="image/png" href="/assets/logo.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Diagnóstico Digital con IA · condor.ai" />
+  <meta property="og:description" content="7 preguntas. 60 segundos. Descubre por qué tu negocio no vende más por internet." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Tipografías con carácter (nada genérico): Bricolage Grotesque (display) + Hanken Grotesk (cuerpo)
+       + Instrument Serif italic (énfasis) + Space Mono (etiquetas/números) -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================================
+       PALETA — editorial premium (papel + tinta + acento eléctrico)
+       ========================================================= */
+    :root{
+      --bone:#f3efe6; --bone-2:#ece7db; --ink:#0c0c0c; --ink-3:#4a4843;
+      --linea:rgba(12,12,12,.16); --linea-2:rgba(12,12,12,.08);
+      --acento:#1f2bff; --acento-2:#5562ff; --ok:#0a7d4f; --wsp:#1faf54;
+      --r:14px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:var(--bone);color:var(--ink);
+      line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+    /* Grano fino (textura premium) */
+    body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.55;mix-blend-mode:multiply;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")}
+    h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;line-height:1.04;letter-spacing:-.02em;font-weight:800}
+    em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;letter-spacing:.01em}
+    a{color:inherit;text-decoration:none}
+    .mono{font-family:'Space Mono',monospace;letter-spacing:-.02em}
+    .wrap{width:100%;max-width:680px;margin:0 auto;padding:0 22px}
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+    header{position:sticky;top:0;z-index:60;background:rgba(243,239,230,.82);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--linea-2)}
+    .hd{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;max-width:680px;margin:0 auto}
+    .logo-img{height:26px;width:auto;display:block}
+    .estado{font-family:'Space Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;
+      display:inline-flex;align-items:center;gap:8px;color:var(--ink-3)}
+    .estado .led{width:7px;height:7px;border-radius:50%;background:var(--acento);box-shadow:0 0 0 0 rgba(31,43,255,.5);animation:latir 1.8s infinite}
+    @keyframes latir{0%{box-shadow:0 0 0 0 rgba(31,43,255,.5)}70%{box-shadow:0 0 0 7px rgba(31,43,255,0)}100%{box-shadow:0 0 0 0 rgba(31,43,255,0)}}
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+    .hero{position:relative;padding:64px 0 34px;text-align:center;overflow:hidden}
+    .eyebrow{font-family:'Space Mono',monospace;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--ink-3);margin-bottom:26px;display:inline-block}
+    .eyebrow b{color:var(--acento)}
+    .hero h1{font-size:clamp(2.5rem,9vw,4.4rem);font-weight:800}
+    .hero h1 em{font-size:1.04em}
+    .hero .sub{max-width:500px;margin:22px auto 0;color:var(--ink-3);font-size:1.06rem}
+    .hero .meta{font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:.02em;color:var(--ink-3);margin-top:26px}
+    .hero .meta b{color:var(--ink)}
+
+    /* Núcleo 3D (orbe IA) detrás del título */
+    .orbe{position:fixed;top:96px;left:50%;transform:translateX(-50%);width:300px;height:300px;
+      perspective:900px;opacity:.16;pointer-events:none;z-index:-1}
+    .orbe i{position:absolute;inset:0;border:1.5px solid var(--ink);border-radius:50%;transform-style:preserve-3d}
+    .orbe i:nth-child(1){animation:o1 14s linear infinite}
+    .orbe i:nth-child(2){inset:40px;border-color:var(--acento);animation:o2 10s linear infinite}
+    .orbe i:nth-child(3){inset:84px;border-style:dashed;animation:o3 18s linear infinite}
+    .orbe .core{position:absolute;top:50%;left:50%;width:16px;height:16px;margin:-8px;border-radius:50%;
+      background:var(--acento);box-shadow:0 0 30px 6px rgba(31,43,255,.45);animation:pulso 3s ease-in-out infinite}
+    @keyframes o1{from{transform:rotateX(70deg) rotateZ(0)}to{transform:rotateX(70deg) rotateZ(360deg)}}
+    @keyframes o2{from{transform:rotateY(70deg) rotateZ(0)}to{transform:rotateY(70deg) rotateZ(-360deg)}}
+    @keyframes o3{from{transform:rotateX(30deg) rotateY(40deg) rotateZ(0)}to{transform:rotateX(30deg) rotateY(40deg) rotateZ(360deg)}}
+    @keyframes pulso{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:1}}
+
+    .flecha{font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--ink-3);margin-top:40px;animation:baja 1.8s ease-in-out infinite;display:inline-block}
+    @keyframes baja{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+    .divisor{height:1px;background:var(--linea);margin:8px 0}
+
+    /* =========================================================
+       QUIZ
+       ========================================================= */
+    .quiz{padding:46px 0 70px}
+    .quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .conteo{font-family:'Space Mono',monospace;font-size:1.05rem;font-weight:700;letter-spacing:-.02em}
+    .conteo .tot{color:var(--ink-3)}
+    .tiempo{font-family:'Space Mono',monospace;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+    .barra{height:2px;background:var(--linea);position:relative;margin-bottom:40px}
+    .barra b{position:absolute;left:0;top:0;height:100%;width:14%;background:var(--acento);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+
+    .paso{display:none}
+    .paso.on{display:block;animation:entra .5s cubic-bezier(.2,.7,.2,1)}
+    @keyframes entra{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .num{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--acento);letter-spacing:.04em;margin-bottom:14px;display:block}
+    .paso h2{font-size:clamp(1.6rem,5.4vw,2.2rem);font-weight:800;margin-bottom:8px}
+    .paso h2 em{font-size:1.05em}
+    .paso .ayuda{color:var(--ink-3);font-size:.96rem;margin-bottom:24px}
+
+    /* Opciones (invierten a tinta al elegir) */
+    .opt{display:flex;align-items:center;gap:16px;width:100%;text-align:left;cursor:pointer;
+      border:1.5px solid var(--ink);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;background:transparent;
+      font-family:'Hanken Grotesk',sans-serif;font-size:1.02rem;font-weight:500;color:var(--ink);
+      transition:transform .18s ease, background .2s ease, color .2s ease, border-color .2s}
+    .opt .ix{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--ink-3);transition:color .2s}
+    .opt:hover{transform:translateX(4px)}
+    .opt.sel{background:var(--ink);color:var(--bone);border-color:var(--ink)}
+    .opt.sel .ix{color:var(--acento-2)}
+
+    .campo{width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--ink);
+      padding:14px 2px;font-family:'Hanken Grotesk',sans-serif;font-size:1.15rem;color:var(--ink);transition:border-color .2s}
+    .campo::placeholder{color:rgba(12,12,12,.32)}
+    .campo:focus{outline:none;border-color:var(--acento)}
+    textarea.campo{min-height:120px;resize:vertical;border:1.5px solid var(--ink);border-radius:var(--r);padding:16px}
+    .lbl{font-family:'Space Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+      color:var(--ink-3);display:block;margin:22px 0 4px}
+    .lbl:first-of-type{margin-top:0}
+
+    .nav{display:flex;gap:12px;margin-top:34px}
+    .btn{border:none;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1rem;
+      min-height:58px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      transition:transform .2s ease, box-shadow .2s ease, opacity .2s}
+    .btn-go{flex:1;background:var(--ink);color:var(--bone);box-shadow:0 12px 0 -6px rgba(12,12,12,.18)}
+    .btn-go:hover{transform:translateY(-2px)}
+    .btn-go:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .btn-back{flex:0 0 58px;width:58px;background:transparent;border:1.5px solid var(--ink);font-size:1.2rem}
+    .err{font-family:'Space Mono',monospace;font-size:.8rem;color:#c0392b;margin-top:14px;display:none}
+    .err.on{display:block}
+
+    /* =========================================================
+       PROCESANDO (estados estilo terminal)
+       ========================================================= */
+    .proc{display:none;padding:30px 0 70px}
+    .proc.on{display:block}
+    .proc h2{font-size:1.6rem;margin-bottom:24px}
+    .proc h2 em{font-size:1.05em}
+    .linea-proc{font-family:'Space Mono',monospace;font-size:.92rem;color:var(--ink-3);padding:10px 0;
+      border-bottom:1px dashed var(--linea);display:flex;align-items:center;gap:12px;opacity:.3;transition:opacity .4s}
+    .linea-proc.activa{opacity:1;color:var(--ink)}
+    .linea-proc .mk{color:var(--acento)}
+    .linea-proc.activa .mk{animation:parp 1s steps(2) infinite}
+    @keyframes parp{50%{opacity:.2}}
+
+    /* =========================================================
+       RESULTADO
+       ========================================================= */
+    .res{display:none;padding:30px 0 80px}
+    .res.on{display:block;animation:entra .6s ease}
+    .res .tag{font-family:'Space Mono',monospace;font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--acento);margin-bottom:16px;display:block}
+    .res h2{font-size:clamp(1.9rem,6vw,2.6rem);margin-bottom:14px}
+    .res .diag{font-size:1.12rem;color:var(--ink);margin-bottom:30px;max-width:560px}
+    .res .seccion{font-family:'Space Mono',monospace;font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin:0 0 14px}
+    .prob{border-top:1px solid var(--linea);padding:18px 0;display:flex;gap:18px}
+    .prob .pn{font-family:'Space Mono',monospace;font-size:.82rem;color:var(--acento);flex:0 0 auto;padding-top:2px}
+    .prob p{font-size:1.02rem}
+    .reco{margin:30px 0;padding:26px;border:1.5px solid var(--ink);border-radius:var(--r);background:var(--bone-2)}
+    .reco .seccion{margin-bottom:10px}
+    .reco p{font-size:1.05rem}
+    .cta{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--ink);color:var(--bone);
+      min-height:64px;border-radius:999px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.08rem;
+      margin-top:10px;transition:transform .2s, box-shadow .2s}
+    .cta:hover{transform:translateY(-3px);box-shadow:0 18px 40px -16px rgba(12,12,12,.5)}
+    .cta .wb{width:24px;height:24px;border-radius:50%;background:var(--wsp);display:grid;place-items:center}
+    .cta .wb svg{width:15px;height:15px;fill:#fff}
+    .urg{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--ink-3);text-align:center;margin-top:14px}
+
+    footer{padding:30px 0 50px;text-align:center;border-top:1px solid var(--linea)}
+    footer p{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--ink-3);letter-spacing:.02em}
+
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.orbe{display:none}}
+  </style>
+</head>
+<body>
+  <!-- Orbe 3D como fondo sutil (decoración) -->
+  <div class="orbe" id="orbe" aria-hidden="true"><i></i><i></i><i></i><span class="core"></span></div>
+
+  <header>
+    <div class="hd">
+      <a href="/"><img class="logo-img" src="/assets/logo.png" alt="condor.ai" /></a>
+      <div class="estado"><span class="led"></span> diagnóstico · IA</div>
+    </div>
+  </header>
+
+  <!-- ===================== QUIZ (directo, sin título) ===================== -->
+  <section class="quiz">
+    <div class="wrap">
+      <div class="quiz-top">
+        <div class="conteo"><span id="cActual">01</span><span class="tot"> / 07</span></div>
+        <div class="tiempo" id="estadoQuiz">› responde para avanzar</div>
+      </div>
+      <div class="barra"><b id="barra"></b></div>
+
+      <form id="form" novalidate>
+        <!-- 01 -->
+        <div class="paso on" data-paso="1">
+          <span class="num">[ 01 — TU NEGOCIO ]</span>
+          <h2>¿Qué tipo de negocio <em>tienes</em>?</h2>
+          <p class="ayuda">Para adaptar el análisis a tu rubro.</p>
+          <div class="grupo" data-name="tipo">
+            <button type="button" class="opt"><span class="ix">A</span> Restaurante o comida</button>
+            <button type="button" class="opt"><span class="ix">B</span> Tienda o venta de productos</button>
+            <button type="button" class="opt"><span class="ix">C</span> Servicios (salón, taller, clínica…)</button>
+            <button type="button" class="opt"><span class="ix">D</span> Otro</button>
+          </div>
+        </div>
+        <!-- 02 -->
+        <div class="paso" data-paso="2">
+          <span class="num">[ 02 — PRESENCIA ]</span>
+          <h2>¿Tienes página web <em>hoy</em>?</h2>
+          <p class="ayuda">No te preocupes si no — para eso estamos.</p>
+          <div class="grupo" data-name="web">
+            <button type="button" class="opt"><span class="ix">A</span> No tengo página web</button>
+            <button type="button" class="opt"><span class="ix">B</span> Solo redes sociales</button>
+            <button type="button" class="opt"><span class="ix">C</span> Tengo una, pero no me trae clientes</button>
+            <button type="button" class="opt"><span class="ix">D</span> Tengo una que funciona bien</button>
+          </div>
+        </div>
+        <!-- 03 -->
+        <div class="paso" data-paso="3">
+          <span class="num">[ 03 — VOLUMEN ]</span>
+          <h2>¿Cuántos clientes <em>nuevos</em> consigues al mes?</h2>
+          <p class="ayuda">Un estimado está bien.</p>
+          <div class="grupo" data-name="clientes_mes">
+            <button type="button" class="opt"><span class="ix">A</span> Menos de 10</button>
+            <button type="button" class="opt"><span class="ix">B</span> Entre 10 y 50</button>
+            <button type="button" class="opt"><span class="ix">C</span> Entre 50 y 200</button>
+            <button type="button" class="opt"><span class="ix">D</span> Más de 200</button>
+          </div>
+        </div>
+        <!-- 04 -->
+        <div class="paso" data-paso="4">
+          <span class="num">[ 04 — ORIGEN ]</span>
+          <h2>¿De dónde vienen tus clientes <em>ahora</em>?</h2>
+          <p class="ayuda">Lo que más peso tiene hoy.</p>
+          <div class="grupo" data-name="origen">
+            <button type="button" class="opt"><span class="ix">A</span> Recomendación / boca a boca</button>
+            <button type="button" class="opt"><span class="ix">B</span> Instagram / Facebook</button>
+            <button type="button" class="opt"><span class="ix">C</span> Gente que pasa por el local</button>
+            <button type="button" class="opt"><span class="ix">D</span> Casi no llegan clientes nuevos</button>
+          </div>
+        </div>
+        <!-- 05 -->
+        <div class="paso" data-paso="5">
+          <span class="num">[ 05 — EL PROBLEMA ]</span>
+          <h2>¿Cuál es tu <em>mayor</em> problema ahora?</h2>
+          <p class="ayuda">Con tus palabras. Mientras más detalle, mejor el diagnóstico.</p>
+          <textarea class="campo" name="problema" placeholder="Ej: la gente no me encuentra en Google, dependo solo de Instagram, no tengo dónde mostrar mis precios, pierdo clientes que preguntan y no alcanzo a responder…"></textarea>
+        </div>
+        <!-- 06 -->
+        <div class="paso" data-paso="6">
+          <span class="num">[ 06 — IDENTIDAD ]</span>
+          <h2>¿Cómo se llama tu <em>negocio</em>?</h2>
+          <p class="ayuda">Para personalizar tu diagnóstico.</p>
+          <label class="lbl">Nombre del negocio</label>
+          <input class="campo" name="negocio" placeholder="Ej: Lavandería Express Milagros" />
+          <label class="lbl">Instagram (opcional)</label>
+          <input class="campo" name="instagram" placeholder="@tunegocio" />
+        </div>
+        <!-- 07 -->
+        <div class="paso" data-paso="7">
+          <span class="num">[ 07 — ENVÍO ]</span>
+          <h2>¿A dónde te <em>enviamos</em> los resultados?</h2>
+          <p class="ayuda">Recibes el diagnóstico y te escribimos por WhatsApp.</p>
+          <label class="lbl">WhatsApp</label>
+          <input class="campo" name="whatsapp" inputmode="tel" placeholder="+51 987 654 321" />
+          <label class="lbl">Correo electrónico</label>
+          <input class="campo" name="email" type="email" placeholder="tucorreo@ejemplo.com" />
+        </div>
+
+        <div class="nav">
+          <button type="button" class="btn btn-back" id="back" style="display:none">←</button>
+          <button type="button" class="btn btn-go" id="go">Comenzar →</button>
+        </div>
+        <div class="err mono" id="err"></div>
+      </form>
+
+      <!-- Procesando -->
+      <div class="proc" id="proc">
+        <h2>Analizando tu <em>negocio</em>…</h2>
+        <div class="linea-proc" data-i="0"><span class="mk">▸</span> leyendo tus respuestas</div>
+        <div class="linea-proc" data-i="1"><span class="mk">▸</span> evaluando tu rubro y competencia</div>
+        <div class="linea-proc" data-i="2"><span class="mk">▸</span> detectando fugas de clientes</div>
+        <div class="linea-proc" data-i="3"><span class="mk">▸</span> generando diagnóstico personalizado</div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="res" id="res"></div>
+    </div>
+  </section>
+
+  <footer><div class="wrap"><p>CONDOR.AI · PÁGINAS WEB PARA NEGOCIOS · ENTREGA 24–72H · PERÚ</p></div></footer>
+
+  <script>
+    /* =========================================================
+       CONFIGURACIÓN — EDITA ESTAS 3 LÍNEAS (ver DEPLOY.md)
+       ========================================================= */
+    const FUNCTION_URL = "https://ogmvdthxwcmvqjlxhpsr.supabase.co/functions/v1/diagnostico"; // Edge Function de Supabase
+    const ANON_KEY     = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nbXZkdGh4d2NtdnFqbHhocHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDEwMTksImV4cCI6MjA5NzIxNzAxOX0.wo6zSUlMejjYu1hSweZcWEBBdCvBgVNWg3xtLzFTIrI"; // anon public (segura de exponer)
+    const WHATSAPP     = "56988989824"; // WhatsApp Business condor.ai
+
+    const TOTAL=7; let paso=1;
+    const form=document.getElementById('form'), barra=document.getElementById('barra');
+    const go=document.getElementById('go'), back=document.getElementById('back'), err=document.getElementById('err');
+    const cActual=document.getElementById('cActual'), estadoQuiz=document.getElementById('estadoQuiz');
+    const datos={};
+
+    function dd(n){return String(n).padStart(2,'0')}
+    function pintar(){
+      document.querySelectorAll('.paso').forEach(p=>p.classList.toggle('on',+p.dataset.paso===paso));
+      barra.style.width=(paso/TOTAL*100)+'%'; cActual.textContent=dd(paso);
+      back.style.display=paso>1?'inline-flex':'none';
+      go.textContent = paso===TOTAL ? 'Ver mi diagnóstico ✦' : (paso===1?'Comenzar →':'Siguiente →');
+      err.classList.remove('on');
+    }
+
+    // Selección de opciones (botones)
+    form.addEventListener('click',e=>{
+      const o=e.target.closest('.opt'); if(!o) return;
+      const grupo=o.closest('.grupo'); grupo.querySelectorAll('.opt').forEach(b=>b.classList.remove('sel'));
+      o.classList.add('sel'); datos[grupo.dataset.name]=o.textContent.replace(/^[A-D]\s*/,'').trim();
+      estadoQuiz.textContent='› opción registrada';
+      setTimeout(()=>{ if(paso<TOTAL){paso++;pintar();} },260); // auto-avanza
+    });
+
+    function leerCampos(){
+      form.querySelectorAll('.campo').forEach(c=>{ if(c.name) datos[c.name]=c.value.trim(); });
+    }
+    function valido(){
+      leerCampos();
+      if(paso===1&&!datos.tipo) return 'Elige una opción.';
+      if(paso===2&&!datos.web) return 'Elige una opción.';
+      if(paso===3&&!datos.clientes_mes) return 'Elige una opción.';
+      if(paso===4&&!datos.origen) return 'Elige una opción.';
+      if(paso===5&&!(datos.problema||'')) return 'Cuéntanos tu problema (aunque sea breve).';
+      if(paso===6&&!(datos.negocio||'')) return 'Pon el nombre de tu negocio.';
+      if(paso===7){ if(!(datos.whatsapp||'')) return 'Necesitamos tu WhatsApp.';
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.email||'')) return 'Pon un correo válido.'; }
+      return null;
+    }
+    back.onclick=()=>{ if(paso>1){paso--;pintar();} };
+    go.onclick=()=>{ const e=valido(); if(e){err.textContent='✕ '+e;err.classList.add('on');return;}
+      if(paso<TOTAL){paso++;pintar();} else enviar(); };
+
+    /* ===== Animación de "procesando" ===== */
+    function correrProceso(){
+      const lns=[...document.querySelectorAll('.linea-proc')]; let i=0;
+      lns.forEach(l=>l.classList.remove('activa'));
+      const t=setInterval(()=>{ if(i<lns.length){lns[i].classList.add('activa');i++;} else clearInterval(t); },700);
+    }
+
+    /* ===== Envío a Supabase Edge Function (IA + base de datos) ===== */
+    async function enviar(){
+      leerCampos();
+      // Anti-spam (por navegador): máximo 2 diagnósticos
+      const usos = +(localStorage.getItem('condor_landing_usos')||0);
+      if(usos >= 2){
+        form.style.display='none';
+        mostrar({ saludo:'Ya hiciste tu diagnóstico 👋', diagnostico:'Para cuidar la calidad lo limitamos a 2 por persona. Escríbenos por WhatsApp y te ayudamos personalmente con tu caso, sin límite.', problemas:[], recomendacion:'Hablemos directo por WhatsApp.' });
+        return;
+      }
+      form.style.display='none'; document.getElementById('proc').classList.add('on'); correrProceso();
+      try{
+        const r=await fetch(FUNCTION_URL,{method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+ANON_KEY,'apikey':ANON_KEY},
+          body:JSON.stringify({...datos, modo:"landing"})});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const out=await r.json();
+        if(!out.bloqueado){ localStorage.setItem('condor_landing_usos', usos+1); }
+        setTimeout(()=>mostrar(out),900);
+      }catch(e){
+        document.getElementById('proc').classList.remove('on'); form.style.display='block';
+        err.textContent='✕ No pudimos generar tu diagnóstico. Reintenta o escríbenos por WhatsApp.'; err.classList.add('on');
+      }
+    }
+
+    function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+    function mostrar(out){
+      document.getElementById('proc').classList.remove('on');
+      const res=document.getElementById('res');
+      const probs=(out.problemas||[]).map((p,i)=>`<div class="prob"><span class="pn">[${dd(i+1)}]</span><p>${esc(p)}</p></div>`).join('');
+      const msg=encodeURIComponent(`Hola condor.ai, hice el diagnóstico para "${datos.negocio||''}" y quiero mi página web.`);
+      res.innerHTML=`
+        <span class="tag">› diagnóstico generado</span>
+        <h2>${esc(out.saludo||('Diagnóstico para '+(datos.negocio||'tu negocio')))}</h2>
+        <p class="diag">${esc(out.diagnostico||'')}</p>
+        ${probs?`<p class="seccion">[ lo que te está costando clientes ]</p>${probs}`:''}
+        <div class="reco"><p class="seccion">[ recomendación ]</p><p>${esc(out.recomendacion||'')}</p></div>
+        <a class="cta" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${msg}">
+          <span class="wb"><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 0 0 1.515 5.26l-.999 3.648 3.733-.979z"/></svg></span>
+          Quiero mi página web
+        </a>
+        <p class="urg">› te respondemos en minutos por WhatsApp</p>`;
+      res.classList.add('on'); res.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    /* ===== Paralaje del orbe 3D con el cursor ===== */
+    (function(){
+      if(window.matchMedia('(hover:none)').matches||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+      const orbe=document.getElementById('orbe');
+      addEventListener('mousemove',e=>{ const x=(e.clientX/innerWidth-.5),y=(e.clientY/innerHeight-.5);
+        orbe.style.transform=`translateX(-50%) rotateY(${x*20}deg) rotateX(${-y*20}deg)`; });
+    })();
+
+    pintar();
+  </script>
+</body>
+</html>
