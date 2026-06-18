@@ -84,6 +84,7 @@
       const c = data, mon = c.moneda || "CLP";
       const setupBtn = c.setup_estado!=="pagado" && c.link_setup ? `<a class="btn btn-grad" href="${esc(c.link_setup)}" target="_blank" rel="noopener">Pagar setup</a>` : "";
       const mensualBtn = c.link_mensual ? `<a class="btn btn-grad" href="${esc(c.link_mensual)}" target="_blank" rel="noopener">${c.mensual_estado==="al_dia"?"Gestionar suscripción":"Activar mensualidad"}</a>` : "";
+      const paypalBtn = c.link_paypal ? `<a class="btn" style="background:#ffc439;color:#003087;font-weight:700" href="${esc(c.link_paypal)}" target="_blank" rel="noopener">Pagar con PayPal</a>` : "";
       b.innerHTML = `
         <div class="pcard" style="margin-bottom:18px">
           <div class="frow"><b>Negocio</b><span>${esc(c.negocio)||"—"}</span></div>
@@ -93,7 +94,7 @@
           ${c.proximo_cobro?`<div class="frow"><b>Próximo cobro</b><span>${esc(c.proximo_cobro)}</span></div>`:""}
           ${c.web_url?`<div class="frow"><b>Tu sitio</b><a class="lnk" href="${esc(c.web_url)}" target="_blank" rel="noopener">Ver web →</a></div>`:""}
         </div>
-        ${(setupBtn||mensualBtn)?`<div class="pcard"><p class="muted" style="margin-bottom:14px">Pagos seguros con Mercado Pago.</p><div style="display:flex;flex-wrap:wrap;gap:12px">${setupBtn}${mensualBtn}</div></div>`:`<div class="pcard"><p>¡Estás al día! 🎉 Gracias por confiar en condor.ai.</p></div>`}
+        ${(setupBtn||mensualBtn||paypalBtn)?`<div class="pcard"><p class="muted" style="margin-bottom:14px">Pagos seguros con Mercado Pago o PayPal.</p><div style="display:flex;flex-wrap:wrap;gap:12px">${setupBtn}${mensualBtn}${paypalBtn}</div></div>`:`<div class="pcard"><p>¡Estás al día! 🎉 Gracias por confiar en condor.ai.</p></div>`}
         <p class="muted" style="text-align:center;margin-top:18px">¿Dudas? <a class="lnk" href="https://wa.me/56988989824" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>`;
     }
 
