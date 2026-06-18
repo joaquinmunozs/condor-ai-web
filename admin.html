@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · condor.ai</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .aw{max-width:1000px;margin:0 auto;padding:110px 20px 80px}
+    .topbar{position:fixed;top:0;left:0;right:0;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--linea);z-index:50}
+    .topbar-in{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 20px}.topbar img{height:24px}
+    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:26px}
+    .kpi{background:var(--bg-2);border:1px solid var(--linea);border-radius:16px;padding:22px}
+    .kpi b{font-size:1.9rem;font-weight:700;display:block;letter-spacing:-.03em}.kpi span{color:var(--tx-2);font-size:.85rem}
+    .pcard{background:var(--bg-2);border:1px solid var(--linea);border-radius:18px;padding:24px;margin-bottom:22px}
+    table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--linea)}th{color:var(--tx-2);font-weight:600;font-size:.78rem;text-transform:uppercase}
+    .badge{display:inline-block;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:999px}
+    .b-ok{background:rgba(10,125,79,.12);color:#0a7d4f}.b-pend{background:rgba(255,59,78,.1);color:#c0263a}.b-aldia{background:rgba(39,71,255,.1);color:var(--azul)}
+    .mini{min-height:34px;padding:0 12px;font-size:.82rem;border-radius:8px}
+    input,select{width:100%;border:1px solid var(--linea);border-radius:10px;padding:10px 12px;font-family:var(--sf);font-size:.92rem;margin-top:4px}
+    label{font-size:.78rem;color:var(--tx-2);font-weight:600}
+    .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:640px){.fgrid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="topbar-in"><a href="index.html"><img src="assets/logo.png" alt="condor.ai" /></a><span style="font-weight:700">Panel Admin</span><button class="btn btn-soft mini" id="btnOut" style="display:none">Salir</button></div></div>
+
+  <div class="aw">
+    <div id="login" style="display:none">
+      <h1 style="font-size:1.8rem;margin-bottom:8px">Acceso <span class="grad-tx">admin</span></h1>
+      <p style="color:var(--tx-2);margin-bottom:18px">Solo el equipo condor.ai. Ingresa tu correo de admin.</p>
+      <div class="pcard" style="max-width:420px"><label>Correo</label><input id="email" type="email" placeholder="tucorreo@gmail.com" /><button class="btn btn-grad" style="width:100%;margin-top:14px" id="btnLogin">Enviarme el enlace</button><p id="msg" style="color:var(--tx-2);font-size:.85rem;margin-top:12px;text-align:center"></p></div>
+    </div>
+
+    <div id="panel" style="display:none">
+      <h1 style="font-size:1.9rem;margin-bottom:18px">Dashboard <span class="grad-tx">condor.ai</span></h1>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="pcard">
+        <h3 style="font-size:1.1rem;margin-bottom:14px">➕ Nuevo cliente</h3>
+        <div class="fgrid">
+          <div><label>Correo del cliente</label><input id="c_email" type="email" /></div>
+          <div><label>Negocio</label><input id="c_negocio" /></div>
+          <div><label>Plan</label><input id="c_plan" placeholder="Esencial / Pro / Premium" /></div>
+          <div><label>Concepto (qué incluye)</label><input id="c_concepto" placeholder="Landing + Videos IA" /></div>
+          <div><label>Setup (monto)</label><input id="c_setup" type="number" value="0" /></div>
+          <div><label>Mensual (monto)</label><input id="c_mensual" type="number" value="0" /></div>
+          <div><label>Moneda</label><select id="c_moneda"><option>CLP</option><option>PEN</option><option>USD</option></select></div>
+          <div><label>Web del cliente (opcional)</label><input id="c_web" placeholder="https://…" /></div>
+        </div>
+        <button class="btn btn-grad" style="margin-top:14px" id="btnAdd">Crear cliente</button>
+        <p id="addMsg" style="color:var(--tx-2);font-size:.85rem;margin-top:10px"></p>
+      </div>
+
+      <div class="pcard">
+        <h3 style="font-size:1.1rem;margin-bottom:14px">👥 Clientes</h3>
+        <div style="overflow-x:auto"><table id="tabla"><thead><tr><th>Negocio</th><th>Plan</th><th>Setup</th><th>Mensual</th><th>Cobrar</th></tr></thead><tbody id="filas"></tbody></table></div>
+      </div>
+    </div>
+    <p id="cargando" style="color:var(--tx-2);text-align:center">Cargando…</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL="https://ogmvdthxwcmvqjlxhpsr.supabase.co";
+    const ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nbXZkdGh4d2NtdnFqbHhocHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDEwMTksImV4cCI6MjA5NzIxNzAxOX0.wo6zSUlMejjYu1hSweZcWEBBdCvBgVNWg3xtLzFTIrI";
+    const sb=supabase.createClient(SUPABASE_URL,ANON_KEY);
+    const FUNCTIONS=SUPABASE_URL+"/functions/v1";
+    const $=id=>document.getElementById(id);
+    const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const fmt=(n,m)=> (m||"CLP")+" "+(Number(n||0)).toLocaleString();
+
+    async function init(){
+      const { data:{session} } = await sb.auth.getSession();
+      $("cargando").style.display="none";
+      if(!session){ $("login").style.display="block"; return; }
+      const { data:adm } = await sb.rpc("es_admin");
+      if(!adm){ $("cargando").style.display="block"; $("cargando").innerHTML="Tu correo no es admin. <a class='lnk' href='portal.html'>Ir al portal de clientes →</a>"; return; }
+      $("btnOut").style.display="inline-flex"; $("panel").style.display="block";
+      cargar();
+    }
+
+    async function cargar(){
+      const { data:clientes } = await sb.from("clientes").select("*").order("creado_en",{ascending:false});
+      const { data:pagos } = await sb.from("pagos").select("monto,estado,tipo");
+      const ingresos = (pagos||[]).filter(p=>p.estado==="pagado").reduce((s,p)=>s+(p.monto||0),0);
+      const pend = (clientes||[]).filter(c=>c.setup_estado!=="pagado").length;
+      $("kpis").innerHTML=`
+        <div class="kpi"><b>${(clientes||[]).length}</b><span>Clientes</span></div>
+        <div class="kpi"><b class="grad-tx">${(ingresos).toLocaleString()}</b><span>Ingresos cobrados</span></div>
+        <div class="kpi"><b>${(pagos||[]).filter(p=>p.estado==='pagado').length}</b><span>Pagos confirmados</span></div>
+        <div class="kpi"><b>${pend}</b><span>Setup pendiente</span></div>`;
+      const badge=(e)=>{const m={pagado:["b-ok","Pagado"],al_dia:["b-aldia","Al día"],vencido:["b-pend","Vencido"],pendiente:["b-pend","Pendiente"]};const[c,t]=m[e]||["b-pend",e||"—"];return `<span class="badge ${c}">${t}</span>`;};
+      $("filas").innerHTML=(clientes||[]).map(c=>`
+        <tr><td><b>${esc(c.negocio)||"—"}</b><br><span style="color:var(--tx-2);font-size:.8rem">${esc(c.email)}</span></td>
+        <td>${esc(c.plan)||"—"}</td>
+        <td>${fmt(c.setup_monto,c.moneda)}<br>${badge(c.setup_estado)}</td>
+        <td>${fmt(c.mensual_monto,c.moneda)}<br>${badge(c.mensual_estado)}</td>
+        <td><button class="btn btn-soft mini" onclick="cobro('${c.id}','setup')">Link setup</button> <button class="btn btn-soft mini" onclick="cobro('${c.id}','mensual')">Link mensual</button></td></tr>`).join("");
+    }
+
+    window.cobro=async function(id,tipo){
+      const { data:{session} } = await sb.auth.getSession();
+      try{
+        const r=await fetch(FUNCTIONS+"/crear-pago",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":ANON_KEY},body:JSON.stringify({tipo,cliente_id:id})});
+        const j=await r.json();
+        if(j.init_point){ await navigator.clipboard.writeText(j.init_point).catch(()=>{}); prompt("Link de cobro (cópialo y envíalo al cliente por WhatsApp):", j.init_point); }
+        else alert("Error: "+(j.error||"intenta de nuevo"));
+      }catch(e){ alert("Error de conexión"); }
+    };
+
+    $("btnAdd").onclick=async()=>{
+      const row={email:$("c_email").value.trim(),negocio:$("c_negocio").value.trim(),plan:$("c_plan").value.trim(),concepto:$("c_concepto").value.trim(),setup_monto:+$("c_setup").value||0,mensual_monto:+$("c_mensual").value||0,moneda:$("c_moneda").value,web_url:$("c_web").value.trim()};
+      if(!row.email){ $("addMsg").textContent="Pon el correo del cliente."; return; }
+      const { error }=await sb.from("clientes").insert(row);
+      $("addMsg").textContent= error ? ("Error: "+error.message) : "✅ Cliente creado.";
+      if(!error){ ["c_email","c_negocio","c_plan","c_concepto","c_web"].forEach(i=>$(i).value=""); cargar(); }
+    };
+
+    $("btnLogin").onclick=async()=>{
+      const email=$("email").value.trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("msg").textContent="Correo inválido."; return; }
+      const { error }=await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
+      $("msg").textContent= error ? ("Error: "+error.message) : "✅ Revisa tu correo y abre el enlace.";
+    };
+    $("btnOut").onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+    sb.auth.onAuthStateChange((_e,s)=>{ if(s) init(); });
+    init();
+  </script>
+</body>
+</html>
