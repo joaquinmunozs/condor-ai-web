@@ -125,21 +125,22 @@
       const lista = verArchivados ? archivados : activos;
       const ingresos = (pagos||[]).filter(p=>p.estado==="pagado").reduce((s,p)=>s+(p.monto||0),0);
       const pend = activos.filter(c=>c.setup_estado!=="pagado").length;
+      const morosos = activos.filter(c=>c.irresponsable).length;
       $("kpis").innerHTML=`
         <div class="kpi"><b>${activos.length}</b><span>Clientes activos</span></div>
         <div class="kpi"><b class="grad-tx">${(ingresos).toLocaleString()}</b><span>Ingresos cobrados</span></div>
         <div class="kpi"><b>${(pagos||[]).filter(p=>p.estado==='pagado').length}</b><span>Pagos confirmados</span></div>
-        <div class="kpi"><b>${pend}</b><span>Setup pendiente</span></div>`;
+        <div class="kpi" ${morosos?'style="border-color:#f3b0b8;background:rgba(255,59,78,.06)"':''}><b style="${morosos?'color:#c0263a':''}">${morosos}</b><span>${morosos?'⚠️ Sin pagar (alerta)':'Sin pagar'}</span></div>`;
       $("verArch").textContent = verArchivados ? `← Ver activos (${activos.length})` : `Ver archivados (${archivados.length})`;
       const badge=(e)=>{const m={pagado:["b-ok","Pagado"],al_dia:["b-aldia","Al día"],vencido:["b-pend","Vencido"],pendiente:["b-pend","Pendiente"]};const[c,t]=m[e]||["b-pend",e||"—"];return `<span class="badge ${c}">${t}</span>`;};
       $("filas").innerHTML = lista.map(c=>`
-        <tr><td><b>${esc(c.negocio)||"—"}</b><br><span style="color:var(--tx-2);font-size:.8rem">${esc(c.email)}</span></td>
+        <tr ${c.irresponsable?'style="background:rgba(255,59,78,.05)"':''}><td><b>${esc(c.negocio)||"—"}</b>${c.irresponsable?` <span class="badge b-pend" title="No ha pagado tras el cobro">⚠️ Irresponsable${c.dias_sin_pagar?` · ${c.dias_sin_pagar}d`:''}</span>`:''}<br><span style="color:var(--tx-2);font-size:.8rem">${esc(c.email)}</span></td>
         <td>${esc(c.plan)||"—"}</td>
         <td>${fmt(c.setup_monto,c.moneda)}<br>${badge(c.setup_estado)}</td>
         <td>${fmt(c.mensual_monto,c.moneda)}<br>${badge(c.mensual_estado)}</td>
         <td>${ verArchivados
           ? `<button class="btn btn-soft mini" onclick="restaurar('${c.id}')">Restaurar</button> <button class="btn mini" style="background:#ffe3e6;color:#c0263a" onclick="borrarCliente('${c.id}','${esc(c.negocio||c.email).replace(/'/g,"")}')">Borrar</button>`
-          : `<button class="btn btn-soft mini" onclick="cobro('${c.id}','setup')">Link setup</button> <button class="btn btn-soft mini" onclick="cobro('${c.id}','mensual')">Link mensual</button> <button class="btn btn-soft mini" onclick="archivar('${c.id}')">Archivar</button>` }
+          : `<button class="btn btn-soft mini" onclick="cobro('${c.id}','setup')" title="Copia el link de pago">Link setup</button> <button class="btn btn-soft mini" onclick="cobro('${c.id}','mensual')" title="Copia el link de mensualidad">Link mensual</button> <button class="btn mini" style="background:#e8edff;color:#2747ff" onclick="cobrarCorreo('${c.id}')" title="Envía el cobro por correo al cliente">📧 Enviar cobro</button> <button class="btn btn-soft mini" onclick="archivar('${c.id}')">Archivar</button>` }
         </td></tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--tx-2);padding:24px">${verArchivados?"No hay clientes archivados.":"Aún no hay clientes. Crea el primero arriba."}</td></tr>`;
     }
     window.toggleArch=()=>{ verArchivados=!verArchivados; cargar(); };
@@ -161,11 +162,24 @@
       }catch(e){ alert("Error de conexión"); }
     };
 
+    // Envía el cobro por correo al cliente (opcional, el admin decide)
+    window.cobrarCorreo=async function(id){
+      const tipo = confirm("¿Qué cobro envías por correo al cliente?\n\nAceptar = Setup (pago inicial)\nCancelar = Mensualidad") ? "setup" : "mensual";
+      const { data:{session} } = await sb.auth.getSession();
+      try{
+        const r=await fetch(FUNCTIONS+"/crear-pago",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":ANON_KEY},body:JSON.stringify({tipo,cliente_id:id,enviar_correo:true})});
+        const j=await r.json();
+        if(j.init_point){ alert(j.correo_enviado ? "✅ Cobro enviado al correo del cliente." : "Se generó el cobro, pero el correo no se pudo enviar. Revisa que Resend esté configurado."); cargar(); }
+        else alert("Error: "+(j.error||"intenta de nuevo"));
+      }catch(e){ alert("Error de conexión"); }
+    };
+
     $("btnAdd").onclick=async()=>{
-      const row={email:$("c_email").value.trim(),negocio:$("c_negocio").value.trim(),plan:$("c_plan").value.trim(),concepto:$("c_concepto").value.trim(),setup_monto:+$("c_setup").value||0,mensual_monto:+$("c_mensual").value||0,moneda:$("c_moneda").value,web_url:$("c_web").value.trim()};
+      const { data:{ user } } = await sb.auth.getUser();
+      const row={email:$("c_email").value.trim(),negocio:$("c_negocio").value.trim(),plan:$("c_plan").value.trim(),concepto:$("c_concepto").value.trim(),setup_monto:+$("c_setup").value||0,mensual_monto:+$("c_mensual").value||0,moneda:$("c_moneda").value,web_url:$("c_web").value.trim(),creado_por:user?.email||null};
       if(!row.email){ $("addMsg").textContent="Pon el correo del cliente."; return; }
       const { error }=await sb.from("clientes").insert(row);
-      $("addMsg").textContent= error ? ("Error: "+error.message) : "✅ Cliente creado.";
+      $("addMsg").textContent= error ? ("Error: "+error.message) : "✅ Cliente creado. Usa 📧 Enviar cobro para mandarle el link de pago por correo.";
       if(!error){ ["c_email","c_negocio","c_plan","c_concepto","c_web"].forEach(i=>$(i).value=""); cargar(); }
     };
 
