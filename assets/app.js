@@ -39,6 +39,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Forzar autoplay de todos los videos (íconos, fondos) — móvil a veces no lo dispara solo
+  document.querySelectorAll("video[autoplay]").forEach(v => {
+    v.muted = true; v.setAttribute("muted", ""); v.playsInline = true; v.setAttribute("playsinline", "");
+    const go = () => v.play().catch(() => {});
+    go();
+    v.addEventListener("loadeddata", go);
+    v.addEventListener("canplay", go);
+  });
+  // Reintenta al primer toque/scroll (por si el navegador bloqueó el autoplay inicial)
+  const kick = () => { document.querySelectorAll("video[autoplay]").forEach(v => v.play().catch(() => {})); };
+  document.addEventListener("touchstart", kick, { once: true, passive: true });
+  document.addEventListener("scroll", kick, { once: true, passive: true });
+
   // Barra de noticias IA (home): rota 3 titulares cada 7 segundos
   const newsBar = document.getElementById("newsBar");
   if (newsBar) {
