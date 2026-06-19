@@ -29,6 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: true });
   }
 
+  // Tarjetas de equipo: en pantallas táctiles se despliegan al tocar
+  if (matchMedia("(hover: none)").matches) {
+    document.querySelectorAll("[data-member]").forEach(card => {
+      card.addEventListener("click", ev => {
+        if (ev.target.closest("a")) return; // no bloquear el botón "Ver perfil"
+        card.classList.toggle("open");
+      });
+    });
+  }
+
   // Formulario de contacto -> abre WhatsApp con los datos
   const cf = document.getElementById("cform");
   if (cf) cf.addEventListener("submit", ev => {

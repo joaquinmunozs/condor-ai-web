@@ -37,7 +37,8 @@ img{display:block;max-width:100%}
 nav{position:fixed;top:0;left:0;right:0;z-index:80;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid transparent;transition:border-color .3s}
 nav.solid{border-color:var(--linea)}
 .nav-in{max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 24px}
-.brand img{height:26px;width:auto}
+.brand img{height:26px;width:auto;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.brand:hover img{transform:scale(1.07) rotate(-4deg)}
 .nav-links{display:flex;align-items:center;gap:28px}
 .nav-links a.lk{font-size:.9rem;font-weight:500;color:var(--tx);opacity:.82;transition:opacity .2s}.nav-links a.lk:hover{opacity:1}
 .hamb{display:none;width:42px;height:42px;border:none;background:transparent;cursor:pointer;position:relative}
@@ -153,6 +154,18 @@ footer ul{list-style:none}footer ul li{padding:6px 0;font-size:.92rem}footer ul 
 .avatar{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:1.9rem;background:linear-gradient(135deg,var(--a,#2747ff),var(--b,#ff3b4e));box-shadow:0 14px 30px -12px rgba(39,71,255,.5);overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .rolet{color:var(--azul);font-weight:600;font-size:.9rem;margin-bottom:8px}
+/* Tarjeta de integrante que se despliega */
+.member{cursor:pointer}
+.member-detail{max-height:0;opacity:0;overflow:hidden;transition:max-height .55s cubic-bezier(.2,.8,.2,1),opacity .4s,margin-top .4s;margin-top:0}
+.member-detail .tick{display:inline-block;text-align:left;margin:0 0 12px}
+.member-detail .tick li{font-size:.88rem;padding:4px 0 4px 24px}
+.member .tap-hint{font-size:.78rem;color:var(--azul);font-weight:600;margin-top:10px}
+.member.open .member-detail{max-height:300px;opacity:1;margin-top:14px}
+.member.open .tap-hint{opacity:0}
+@media(hover:hover){
+  .member:hover .member-detail{max-height:300px;opacity:1;margin-top:14px}
+  .member .tap-hint{display:none}
+}
 .social-row{display:flex;gap:10px;justify-content:center;margin-top:14px}
 .social-row a{width:34px;height:34px;border-radius:50%;background:var(--bg-3);display:grid;place-items:center;font-size:.9rem;transition:transform .25s,background .25s}.social-row a:hover{transform:translateY(-2px);background:#e8e8ee}
 
