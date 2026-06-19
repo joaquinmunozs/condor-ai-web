@@ -39,12 +39,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Barra de noticias IA (home): carga el titular de la semana
+  // Barra de noticias IA (home): rota 3 titulares cada 7 segundos
   const newsBar = document.getElementById("newsBar");
   if (newsBar) {
     fetch("/assets/noticias-ia.json?v=" + Date.now())
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.titular) { document.getElementById("newsTitle").textContent = d.titular; newsBar.style.display = "flex"; } })
+      .then(d => {
+        const lista = (d && (d.noticias || (d.titular ? [{ titular: d.titular }] : []))) || [];
+        const items = lista.map(n => n.titular).filter(Boolean);
+        if (!items.length) return;
+        const el = document.getElementById("newsTitle");
+        let i = 0;
+        el.textContent = items[0];
+        newsBar.style.display = "flex";
+        if (items.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          setInterval(() => {
+            i = (i + 1) % items.length;
+            el.style.opacity = "0";
+            setTimeout(() => { el.textContent = items[i]; el.style.opacity = "1"; }, 350);
+          }, 7000);
+        }
+      })
       .catch(() => {});
   }
 
