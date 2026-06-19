@@ -1,0 +1,23 @@
+name: Cobros diarios
+
+on:
+  schedule:
+    # Todos los días a las 13:00 UTC (~9:00 am Chile / 8:00 am Perú)
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+jobs:
+  cobros:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recordatorios y alertas de impago
+        run: node scripts/cobros-diarios.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
