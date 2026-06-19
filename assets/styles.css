@@ -49,17 +49,17 @@ nav.solid{border-color:var(--linea)}
 .drawer.open{transform:none}.drawer a{padding:15px 0;font-size:1.3rem;font-weight:600;border-bottom:1px solid var(--linea)}
 .overlay{position:fixed;inset:0;z-index:85;background:rgba(0,0,0,.3);opacity:0;visibility:hidden;transition:.35s}.overlay.on{opacity:1;visibility:visible}
 
-/* Barra de noticias IA (home) */
-.news-bar{display:flex;align-items:center;gap:12px;max-width:var(--max);margin:84px auto 0;padding:11px 18px;background:var(--grad);color:#fff;border-radius:999px;width:calc(100% - 48px);box-shadow:0 14px 34px -16px rgba(39,71,255,.6);transition:transform .35s,box-shadow .35s}
+/* Barra de noticias IA (home) — va dentro del hero, sobre el título */
+.news-bar{display:flex;align-items:center;gap:12px;max-width:680px;margin:0 auto 30px;padding:11px 18px;background:var(--grad);color:#fff;border-radius:999px;width:100%;box-shadow:0 14px 34px -16px rgba(39,71,255,.6);transition:transform .35s,box-shadow .35s}
 .news-bar:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px rgba(39,71,255,.7)}
 .news-tag{flex:0 0 auto;font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.22);padding:4px 10px;border-radius:999px}
 .news-title{flex:1;font-size:.92rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
 .news-arrow{flex:0 0 auto;font-weight:700;transition:transform .25s}
 .news-bar:hover .news-arrow{transform:translateX(4px)}
-@media(max-width:759px){.news-bar{margin-top:74px;padding:10px 14px}.news-tag{display:none}.news-title{white-space:normal;font-size:.86rem}}
+@media(max-width:759px){.news-bar{margin:0 auto 22px;padding:10px 14px}.news-tag{display:none}.news-title{white-space:normal;font-size:.85rem}}
 
 /* HERO grande (home) */
-.hero{position:relative;padding:170px 0 90px;text-align:center;overflow:hidden}
+.hero{position:relative;padding:120px 0 80px;text-align:center;overflow:hidden}
 .orb{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:.5;will-change:transform}
 .orb-1{width:640px;height:640px;top:-300px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,#2747ff,transparent 62%)}
 .orb-2{width:460px;height:460px;top:40px;right:-160px;background:radial-gradient(circle,#ff3b4e,transparent 62%);opacity:.32}
@@ -196,5 +196,19 @@ footer ul{list-style:none}footer ul li{padding:6px 0;font-size:.92rem}footer ul 
   .grid-2{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)}.grid-4{grid-template-columns:repeat(4,1fr)}
   .split{grid-template-columns:1fr 1fr}.contact-grid{grid-template-columns:1fr 1.1fr}.foot-grid{grid-template-columns:2fr 1fr 1fr 1fr}
 }
-@media(max-width:759px){.nav-links{display:none}.hamb{display:block}section{padding:70px 0}}
+@media(max-width:759px){
+  .nav-links{display:none}.hamb{display:block}
+  section{padding:54px 0}
+  .hero{padding:104px 0 50px}
+  .hero h1{margin:14px auto 18px}
+  .hero-stats{margin-top:40px;gap:24px 36px}
+  .head-c{margin-bottom:36px}
+  .band{padding:46px 22px;border-radius:24px}
+  .pg-hero{padding:120px 0 30px}
+  .split{gap:28px}
+  /* El botón flotante de WhatsApp más chico para no tapar contenido */
+  .wsp-float{width:52px;height:52px;bottom:18px;right:18px}.wsp-float svg{width:27px;height:27px}
+  /* CTAs a ancho completo para tocar fácil */
+  .hero-cta{flex-direction:column}.hero-cta .btn{width:100%}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rev{opacity:1;transform:none}}
