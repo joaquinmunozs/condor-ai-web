@@ -192,13 +192,19 @@
       $("btnPass").disabled=false;
       $("msg").textContent= error ? "Correo o contraseña incorrectos. Primera vez: usa “Entrar con código”." : "";
     };
+    let codeCooldown=0;
     $("lnkCode").onclick=async()=>{
       const email=$("email").value.trim();
       if(!reMail.test(email)){ $("msg").textContent="Primero escribe tu correo."; return; }
+      if(Date.now()<codeCooldown){ $("msg").textContent="Espera unos segundos antes de pedir otro código."; return; }
+      codeCooldown=Date.now()+20000;
       $("msg").textContent="Enviando código…";
-      const { error }=await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
-      if(error){ $("msg").textContent="Error: "+error.message; return; }
-      $("codeEmail").textContent=email; $("msg").textContent=""; show("step-code"); $("code").focus();
+      try{
+        const r=await fetch(FUNCTIONS+"/solicitar-acceso",{method:"POST",headers:{"Content-Type":"application/json","apikey":ANON_KEY,"Authorization":"Bearer "+ANON_KEY},body:JSON.stringify({email})});
+        const j=await r.json();
+        if(r.status===429){ $("msg").textContent=j.error||"Demasiados intentos. Espera unos minutos."; return; }
+        $("codeEmail").textContent=email; $("msg").textContent="Si tu correo está registrado, te llegará un código."; show("step-code"); $("code").focus();
+      }catch(e){ $("msg").textContent="Error de conexión."; }
     };
     $("lnkBack").onclick=()=>{ show("step-pass"); $("msg").textContent=""; };
     $("btnCode").onclick=async()=>{

@@ -216,14 +216,21 @@
       $("loginMsg").textContent = error ? "Correo o contraseña incorrectos. Si es tu primera vez, usa “Entrar con código”." : "";
     };
 
-    // Pedir código de 6 dígitos
+    // Pedir código — pasa por la Edge Function que SOLO envía a correos registrados (anti-acceso ajeno)
+    let codeCooldown = 0;
     $("lnkCode").onclick = async () => {
       const email = $("email").value.trim();
       if(!reMail.test(email)){ $("loginMsg").textContent="Primero escribe tu correo arriba."; return; }
+      if(Date.now() < codeCooldown){ $("loginMsg").textContent="Espera unos segundos antes de pedir otro código."; return; }
+      codeCooldown = Date.now() + 20000;
       $("loginMsg").textContent="Enviando código…";
-      const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
-      if(error){ $("loginMsg").textContent="Error: "+error.message; return; }
-      $("codeEmail").textContent = email; $("loginMsg").textContent=""; show("step-code"); $("code").focus();
+      try{
+        const r = await fetch(FUNCTIONS+"/solicitar-acceso",{ method:"POST", headers:{"Content-Type":"application/json","apikey":ANON_KEY,"Authorization":"Bearer "+ANON_KEY}, body:JSON.stringify({ email }) });
+        const j = await r.json();
+        if(r.status===429){ $("loginMsg").textContent = j.error || "Demasiados intentos. Espera unos minutos."; return; }
+        // Mensaje genérico (no revela si el correo existe). Si está registrado, llegará el código.
+        $("codeEmail").textContent = email; $("loginMsg").textContent="Si tu correo está registrado, te llegará un código."; show("step-code"); $("code").focus();
+      }catch(e){ $("loginMsg").textContent="Error de conexión. Intenta de nuevo."; }
     };
     $("lnkBack").onclick = () => { show("step-pass"); $("loginMsg").textContent=""; };
 
