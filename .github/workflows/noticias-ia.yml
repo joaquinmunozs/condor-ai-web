@@ -1,0 +1,34 @@
+name: Noticias IA semanal
+
+on:
+  schedule:
+    # Cada lunes a las 12:00 UTC (~8:00 am Chile / 7:00 am Perú)
+    - cron: '0 12 * * 1'
+  workflow_dispatch:   # permite ejecutarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  noticias:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generar noticias de IA de la semana
+        run: node scripts/noticias-ia.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "condor-bot"
+          git config user.email "bot@condorai.cl"
+          git add assets/noticias-ia.json noticias-ia/index.html
+          if git diff --staged --quiet; then
+            echo "Sin cambios esta semana"
+          else
+            git commit -m "chore: noticias IA semanal ($(date +%Y-%m-%d))"
+            git push
+          fi

@@ -39,6 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Barra de noticias IA (home): carga el titular de la semana
+  const newsBar = document.getElementById("newsBar");
+  if (newsBar) {
+    fetch("/assets/noticias-ia.json?v=" + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.titular) { document.getElementById("newsTitle").textContent = d.titular; newsBar.style.display = "flex"; } })
+      .catch(() => {});
+  }
+
   // Formulario de contacto -> abre WhatsApp con los datos
   const cf = document.getElementById("cform");
   if (cf) cf.addEventListener("submit", ev => {
