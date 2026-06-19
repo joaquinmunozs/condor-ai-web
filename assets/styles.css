@@ -219,6 +219,13 @@ footer ul{list-style:none}footer ul li{padding:6px 0;font-size:.92rem}footer ul 
   .card{padding:24px}
   .card h3{font-size:1.2rem}.card p{font-size:.95rem}
   .card .ic{width:54px;height:54px;font-size:1.5rem;margin-bottom:16px}
+  /* Servicios del home: 2 columnas compactas en móvil */
+  #servicios .grid-2{grid-template-columns:1fr 1fr;gap:11px}
+  #servicios .card{padding:16px}
+  #servicios .card h3{font-size:1rem;margin-bottom:5px}
+  #servicios .card p{font-size:.82rem;margin-bottom:8px}
+  #servicios .card .ic-v{width:52px;height:52px;margin-bottom:11px}
+  #servicios .card .lnk{font-size:.82rem}
   /* Split (páginas de servicio) */
   .split{gap:24px}.split h2{font-size:1.6rem}
   .visual{min-height:240px}
