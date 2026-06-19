@@ -45,18 +45,19 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("/assets/noticias-ia.json?v=" + Date.now())
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        const lista = (d && (d.noticias || (d.titular ? [{ titular: d.titular }] : []))) || [];
-        const items = lista.map(n => n.titular).filter(Boolean);
-        if (!items.length) return;
+        let lista = (d && (d.noticias || (d.titular ? [{ titular: d.titular, url: d.url }] : []))) || [];
+        lista = lista.filter(n => n && n.titular);
+        if (!lista.length) return;
         const el = document.getElementById("newsTitle");
         let i = 0;
-        el.textContent = items[0];
+        const pinta = () => { el.textContent = lista[i].titular; newsBar.href = lista[i].url || "/noticias-ia/"; };
+        pinta();
         newsBar.style.display = "flex";
-        if (items.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (lista.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
           setInterval(() => {
-            i = (i + 1) % items.length;
+            i = (i + 1) % lista.length;
             el.style.opacity = "0";
-            setTimeout(() => { el.textContent = items[i]; el.style.opacity = "1"; }, 350);
+            setTimeout(() => { el.style.opacity = "1"; pinta(); }, 350);
           }, 7000);
         }
       })
