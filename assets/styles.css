@@ -198,17 +198,46 @@ footer ul{list-style:none}footer ul li{padding:6px 0;font-size:.92rem}footer ul 
 }
 @media(max-width:759px){
   .nav-links{display:none}.hamb{display:block}
-  section{padding:54px 0}
-  .hero{padding:104px 0 50px}
-  .hero h1{margin:14px auto 18px}
-  .hero-stats{margin-top:40px;gap:24px 36px}
-  .head-c{margin-bottom:36px}
-  .band{padding:46px 22px;border-radius:24px}
-  .pg-hero{padding:120px 0 30px}
-  .split{gap:28px}
-  /* El botón flotante de WhatsApp más chico para no tapar contenido */
-  .wsp-float{width:52px;height:52px;bottom:18px;right:18px}.wsp-float svg{width:27px;height:27px}
+  body{font-size:14.5px}
+  .wrap{padding:0 18px}
+  section{padding:44px 0}
+  /* HERO home — tipografías y espaciado compactos */
+  .hero{padding:96px 0 40px}
+  .hero h1{font-size:2.15rem;margin:12px auto 14px;max-width:18ch;letter-spacing:-.03em}
+  .hero p.lead{font-size:1.02rem;margin:0 auto 24px}
+  .hero-stats{margin-top:30px;gap:18px 30px}
+  .hstat b{font-size:1.7rem}
+  /* Títulos de sección */
+  .titulo{font-size:1.7rem}
+  .sub{font-size:1rem}
+  .head-c{margin-bottom:28px;max-width:90%}
+  /* HERO de subpágina */
+  .pg-hero{padding:100px 0 22px}
+  .pg-hero h1{font-size:1.95rem;margin:10px auto 12px}
+  .pg-hero p{font-size:1rem}
+  /* Tarjetas más compactas */
+  .card{padding:24px}
+  .card h3{font-size:1.2rem}.card p{font-size:.95rem}
+  .card .ic{width:54px;height:54px;font-size:1.5rem;margin-bottom:16px}
+  /* Split (páginas de servicio) */
+  .split{gap:24px}.split h2{font-size:1.6rem}
+  .visual{min-height:240px}
+  /* Banda CTA */
+  .band{padding:40px 20px;border-radius:22px}
+  .band h2{font-size:1.6rem}.band p{font-size:1rem}
+  /* Precios / planes */
+  .prec{padding:28px}
+  /* Blog / artículos */
+  .article p{font-size:1.02rem}.article h2{font-size:1.35rem}.article .lead{font-size:1.08rem}
+  .post .ph{height:140px}
+  /* WhatsApp flotante más chico */
+  .wsp-float{width:50px;height:50px;bottom:16px;right:16px}.wsp-float svg{width:26px;height:26px}
   /* CTAs a ancho completo para tocar fácil */
   .hero-cta{flex-direction:column}.hero-cta .btn{width:100%}
+}
+@media(max-width:420px){
+  .hero h1{font-size:1.95rem}
+  .titulo{font-size:1.5rem}
+  .kpis,.grid-4{gap:12px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rev{opacity:1;transform:none}}
